@@ -3,6 +3,44 @@ CEOS 백엔드 23기 스프링 튜토리얼
 
 ## IoC / DI
 
+- **IoC (제어의 역전)**
+    - **객체 생성, 관리**를 개발자가 아닌 **스프링이 담당**
+- **DI** (의존성 주입)
+    - **IoC는 디자인 패턴**
+    - **DI는 IoC 구현 방식 중 하나**
+        - 객체를 직접 생성하는 것이 아닌, **스프링 컨테이너가 생성한 객체(빈)를 주입받아** 사용
+    
+- **개발자가 객체의 생명주기 담당**하는 경우..
+    - `new`로 객체 생성
+        
+        ```jsx
+        public class OrderService {
+            private final PaymentService paymentService;
+        
+            public OrderService() {
+                this.paymentService = new KakaoPayService();
+            }
+        }
+        ```
+        
+        - **변경에 닫혀**있음
+            - 다른 구현체로 교체하려면 **클래스 코드 수정**해야함
+        - 객체의 생성과 소멸을 개발자가 관리해 **메모리 낭비 가능**
+        - **Mock 및 Test 하기 어려**움
+            
+            ```jsx
+            @Test
+            void 주문_테스트() {
+                PaymentService mockPayment = mock(PaymentService.class);
+                
+                // new로 직접 생성 방식
+                // OrderService 내부에서 new KakaoPayService()로 고정되어 있어서
+                // mockPayment를 넣어줄 방법이 없음!
+                // KakaoPayService가 강제됨
+                OrderService orderService = new OrderService(); 
+            }
+            ```
+            
 - **IoC를 통해 스프링이 객체 생명주기 담당**!!
     
     ```jsx
@@ -298,7 +336,6 @@ public class TimeTraceAop {
         
 - 하나의 interface를 구현한 Repository가 여러 개 있을 때 주입 방법
     - **접근하는 DB를 바꾸**는 사례 고려
-    1. **컴포넌트 스캔 방식 사용시**
         - **@Primary**
             - 대부분의 경우 A만 사용하고, B는 거의 사용 안하는 경우 사용
             
@@ -528,7 +565,7 @@ public class TimeTraceAop {
         1. **요청 수신**
             - 클라이언트의 HTTP 요청이 먼저 `DispatcherServlet`에 도착
         2. **목적지 검색**
-            - **`HandlerMapping`**은 `DispatcherServlet`에게 URL과 매핑되는 `Controller` 정보를 반환
+            - `HandlerMapping`은 `DispatcherServlet`에게 URL과 매핑되는 `Controller` 정보를 반환
         3. **실행 어댑터 호출**
             - `HandlerAdapter`가 `Controller`가 받는 파라미터 타입에 맞춰 변환 후, `Controller` 실행
         4. **로직 실행**
@@ -536,8 +573,8 @@ public class TimeTraceAop {
         5. **결과 반환**
             - 로직 처리가 끝나면, 컨트롤러는 **순수한 자바 객체(DTO)** 자체를 `DispatcherServlet`에 반환
         6. **메시지 컨버터 개입** 
-            - `DispatcherServlet`은 **`ViewResolver`** 대신, **`HttpMessageConverter`** 호출해 자바 객체를 **JSON 문자열로 변환**
-            - 스프링은 `HttpMessageConverter`로 **Jackson 라이브러리** 사용
+            - `HandlerAdapter`는 **`HttpMessageConverter`** 호출해 자바 객체를 **JSON 문자열로 변환**
+                - 스프링은 `HttpMessageConverter`로 **Jackson 라이브러리** 사용
         7. **최종 응답** 
             - **JSON 문자열**이 HTTP 응답의 Body에 저장되고 프론트엔드에게 전송
         
@@ -624,7 +661,7 @@ public class TimeTraceAop {
     - **자바의 대표적인 WAS**이자 **서블릿 컨테이너**
     - 특징
         - **서블릿 생명주기 관리**
-            - **Servlet 객체(DispatcherServlet)**의 생성, 실행, 소멸 관리
+            - **Servlet 객체**(DispatcherServlet)의 생성, 실행, 소멸 관리
         - **HTTP 메시지 파싱**
             - HTTP 요청 텍스트를 `HttpServletRequest`와 `HttpServletResponse`객체로 변환
         - **스프링과의 관계**
